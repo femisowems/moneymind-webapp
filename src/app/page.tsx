@@ -164,8 +164,8 @@ export default function Dashboard() {
         </div>
         <div className="flex flex-col-reverse sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-3">
           {permission === 'default' && (
-            <Button onClick={requestPermission} variant="secondary" size="sm" className="flex rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 text-gray-700 font-medium tracking-tight">
-               <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2" />
+            <Button onClick={requestPermission} variant="secondary" size="sm" className="flex rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 text-gray-700 font-medium tracking-tight whitespace-nowrap px-4 py-2 h-9 items-center justify-center gap-2 transition-all active:scale-95">
+               <div className="w-2 h-2 rounded-full bg-primary animate-pulse shrink-0" />
                Enable Alerts
             </Button>
           )}
@@ -188,8 +188,8 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-gradient-to-r from-primary to-primary-hover px-5 py-6 sm:py-2 text-lg sm:text-sm">
-            <Plus className="w-6 h-6 sm:w-5 sm:h-5 mr-1.5" />
+          <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-gradient-to-r from-primary to-primary-hover px-6 py-2.5 h-11 sm:h-auto whitespace-nowrap flex items-center justify-center">
+            <Plus className="w-5 h-5 mr-2 shrink-0" />
             Add Reminder
           </Button>
         </div>

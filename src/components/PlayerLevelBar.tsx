@@ -23,44 +23,59 @@ export function PlayerLevelBar() {
   const progressPercent = Math.min((xpIntoLevel / 100) * 100, 100);
 
   return (
-    <div className="bg-white rounded-2xl p-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] border border-gray-100 mb-6 flex items-center justify-between gap-4 w-full cursor-default group hover:shadow-[0_8px_16px_rgba(0,0,0,0.04)] transition-shadow">
-      <div className="flex items-center gap-3">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-black text-xl shadow-md border-2 border-white transform group-hover:scale-105 transition-transform">
-          {score.level}
+    <div className="bg-white rounded-3xl p-5 sm:p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 mb-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-5 sm:gap-6 w-full cursor-default group hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-500">
+      {/* Top Section: Level Badge & Share Button (Mobile) / Left Section (Desktop) */}
+      <div className="flex items-center justify-between sm:justify-start gap-4">
+        <div className="flex items-center gap-4">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-primary to-primary-hover flex items-center justify-center text-white font-black text-2xl shadow-lg border-4 border-white transform group-hover:scale-105 transition-transform duration-500">
+            {score.level}
+          </div>
+          <div className="flex flex-col">
+            <span className="text-base font-extrabold text-gray-900 tracking-tight leading-tight">Level {score.level}</span>
+            <span className="text-xs font-bold text-gray-400 flex items-center gap-1.5 mt-0.5">
+              <Zap className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" /> {score.xp} Total XP
+            </span>
+          </div>
         </div>
-        <div className="flex flex-col">
-          <span className="text-sm font-extrabold text-gray-900 tracking-tight">Level {score.level}</span>
-          <span className="text-xs font-bold text-gray-500 flex items-center gap-1">
-            <Zap className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500" /> {score.xp} XP
-          </span>
-        </div>
+
+        {/* Share Button (Mobile Only inline) */}
+        <button 
+          onClick={() => setIsShareOpen(true)}
+          className="sm:hidden bg-gray-50 hover:bg-primary/10 text-gray-500 hover:text-primary p-3 rounded-2xl transition-all border border-gray-100 flex items-center justify-center"
+          title="Share Scorecard"
+        >
+          <Share2 className="w-5 h-5" />
+        </button>
       </div>
 
-      <div className="flex-1 max-w-sm relative">
-        <div className="flex justify-between text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-wider">
-          <span>{xpIntoLevel} / 100 XP</span>
-          <span className="text-primary">{100 - xpIntoLevel} TO GO</span>
+      {/* Progress Section: Full width on mobile, flexible on desktop */}
+      <div className="flex-1 flex flex-col gap-2.5">
+        <div className="flex justify-between items-end px-0.5">
+          <div className="flex flex-col">
+            <span className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em] mb-0.5">Progress</span>
+            <span className="text-xs font-bold text-gray-700">{xpIntoLevel} <span className="text-gray-400">/ 100 XP</span></span>
+          </div>
+          <div className="text-right flex flex-col items-end">
+            <span className="text-[10px] font-black text-primary/60 uppercase tracking-[0.15em] mb-0.5">Next Level</span>
+            <span className="text-xs font-bold text-primary">{100 - xpIntoLevel} XP to go</span>
+          </div>
         </div>
-        <div className="w-full h-2.5 bg-gray-100 rounded-full overflow-hidden shadow-inner relative">
+        <div className="w-full h-3.5 bg-gray-100/80 rounded-full overflow-hidden shadow-inner relative border border-gray-50">
           <div 
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary to-[#7050ff] rounded-full transition-all duration-1000 ease-out" 
+            className="absolute top-0 left-0 h-full bg-gradient-to-r from-primary via-primary-hover to-[#7050ff] rounded-full transition-all duration-1000 ease-out shadow-[0_0_12px_rgba(109,80,245,0.3)]" 
             style={{ width: `${progressPercent}%` }} 
           />
         </div>
       </div>
       
-      <div className="text-right flex flex-col items-end">
-        <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Next Lvl</span>
-        <span className="text-sm font-bold text-primary">{100 - xpIntoLevel} XP</span>
-      </div>
-
+      {/* Desktop Share Button */}
       <button 
         onClick={() => setIsShareOpen(true)}
-        className="ml-2 bg-gradient-to-r from-gray-100 to-gray-50 hover:from-primary/10 hover:to-primary/5 text-gray-600 hover:text-primary font-bold p-3 rounded-xl transition-all shadow-sm border border-gray-200 hover:border-primary/20 flex flex-col items-center justify-center shrink-0"
+        className="hidden sm:flex bg-gradient-to-br from-gray-50 to-white hover:from-primary/10 hover:to-primary/5 text-gray-600 hover:text-primary font-bold px-4 py-3 rounded-2xl transition-all shadow-sm border border-gray-200 hover:border-primary/20 flex-col items-center justify-center shrink-0 min-w-[72px]"
         title="Share Scorecard"
       >
-        <Share2 className="w-5 h-5 mb-0.5" />
-        <span className="text-[9px] uppercase tracking-wider">Share</span>
+        <Share2 className="w-5 h-5 mb-1" />
+        <span className="text-[10px] uppercase tracking-widest font-black">Share</span>
       </button>
 
       <ShareScorecardModal isOpen={isShareOpen} onClose={() => setIsShareOpen(false)} />
