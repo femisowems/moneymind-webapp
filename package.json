@@ -1,6 +1,15 @@
 {
   "name": "moneymind-webapp",
   "version": "0.1.0",
+  "description": "MoneyMind (PingMyPocket) - A lightweight, quirky financial reminder and habit tracking app.",
+  "keywords": [
+    "finance",
+    "reminders",
+    "habits",
+    "fintech",
+    "nextjs"
+  ],
+  "author": "MoneyMind Team",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,9 +18,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "framer-motion": "^12.38.0",
+    "lucide-react": "^0.577.0",
     "next": "16.2.0",
     "react": "19.2.4",
-    "react-dom": "19.2.4"
+    "react-day-picker": "^9.14.0",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.5.0",
+    "zustand": "^5.0.12"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",

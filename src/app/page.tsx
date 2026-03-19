@@ -1,65 +1,197 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+import { useState, useEffect } from "react";
+import { format } from "date-fns";
+import { Plus } from "lucide-react";
+import { useStore } from "@/store/useStore";
+import { Button } from "@/components/ui/Button";
+import { NudgeMessage } from "@/components/NudgeMessage";
+import { ReminderCard } from "@/components/ReminderCard";
+import { StreakCard } from "@/components/StreakCard";
+import { HealthScoreCard } from "@/components/HealthScoreCard";
+import { MissedImpactCard } from "@/components/MissedImpactCard";
+import { AddReminderModal } from "@/components/AddReminderModal";
+import { SettingsModal } from "@/components/SettingsModal";
+import { AchievementsSection } from "@/components/AchievementsSection";
+import { CalendarView } from "@/components/CalendarView";
+import { motion, AnimatePresence } from "framer-motion";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Settings, LayoutList, Calendar as CalendarIcon } from "lucide-react";
+
+export default function Dashboard() {
+  const { reminders, categories } = useStore();
+  const { permission, requestPermission } = useNotifications();
+  const [mounted, setMounted] = useState(false);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [activeFilter, setActiveFilter] = useState<string>('All');
+  const [statusFilter, setStatusFilter] = useState<'Pending' | 'Completed' | 'All'>('Pending');
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
+  useEffect(() => {
+    const t = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(t);
+  }, []);
+
+  if (!mounted) {
+    return (
+      <main className="max-w-3xl mx-auto w-full p-4 sm:p-6 md:p-8 min-h-screen pb-24 flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-12 h-12 bg-gray-200 rounded-full mb-4"></div>
+          <div className="h-4 w-24 bg-gray-200 rounded"></div>
         </div>
       </main>
-    </div>
+    );
+  }
+
+  const filteredReminders = reminders
+    .filter(r => activeFilter === 'All' || r.category === activeFilter)
+    .filter(r => {
+      if (statusFilter === 'All') return true;
+      if (statusFilter === 'Completed') return r.isCompleted;
+      return !r.isCompleted;
+    })
+    .sort((a, b) => new Date(a.dueDate).getTime() - new Date(b.dueDate).getTime());
+
+  const today = format(new Date(), 'EEEE, MMMM do');
+
+  return (
+    <main className="max-w-3xl mx-auto w-full p-4 sm:p-6 md:p-8 min-h-screen pb-24">
+      {/* Header */}
+      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 pt-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground flex items-center gap-3">
+            MoneyMind <span className="text-2xl">💸</span>
+          </h1>
+          <p className="text-gray-500 font-medium">{today}</p>
+        </div>
+        <div className="flex w-full sm:w-auto items-center gap-3">
+          {permission === 'default' && (
+            <Button onClick={requestPermission} variant="secondary" size="sm" className="hidden sm:flex rounded-full">
+               Enable Alerts
+            </Button>
+          )}
+          <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-full border border-gray-200">
+            <Settings className="w-5 h-5 text-gray-500" />
+          </Button>
+          <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-gradient-to-r from-primary to-primary-hover">
+            <Plus className="w-5 h-5 mr-2" />
+            Add Reminder
+          </Button>
+        </div>
+      </header>
+
+      {/* Top Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+        <StreakCard />
+        <HealthScoreCard />
+        <MissedImpactCard />
+      </div>
+
+      <AchievementsSection />
+
+      {/* Nudge Area */}
+      <NudgeMessage />
+
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="text-xl font-bold text-foreground">Overview</h2>
+        <div className="flex bg-gray-100 p-1 rounded-xl">
+          <button 
+            onClick={() => setViewMode('list')}
+            className={`p-1.5 rounded-lg transition-colors ${viewMode === 'list' ? 'bg-white shadow-sm text-primary' : 'text-gray-400 hover:text-gray-900'}`}
+          >
+            <LayoutList className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => setViewMode('calendar')}
+            className={`p-1.5 rounded-lg transition-colors ${viewMode === 'calendar' ? 'bg-white shadow-sm text-primary' : 'text-gray-400 hover:text-gray-900'}`}
+          >
+            <CalendarIcon className="w-5 h-5" />
+          </button>
+        </div>
+      </div>
+
+      {viewMode === 'list' ? (
+        <section>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+            <div className="flex gap-2 overflow-x-auto pb-2 sm:pb-0 scrollbar-hide">
+            <button
+              onClick={() => setActiveFilter('All')}
+              className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                activeFilter === 'All' 
+                  ? 'bg-foreground text-background shadow-md' 
+                  : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+              }`}
+            >
+              All
+            </button>
+            {categories.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveFilter(cat.id)}
+                className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+                  activeFilter === cat.id 
+                    ? 'bg-foreground text-background shadow-md' 
+                    : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'
+                }`}
+              >
+                {cat.name}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex gap-2 bg-gray-100 p-1 rounded-full shrink-0">
+            {(['All', 'Pending', 'Completed'] as const).map(status => (
+              <button
+                key={status}
+                onClick={() => setStatusFilter(status)}
+                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                  statusFilter === status
+                    ? 'bg-white shadow-sm text-foreground'
+                    : 'text-gray-500 hover:text-gray-900'
+                }`}
+              >
+                {status}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <AnimatePresence mode="popLayout">
+            {filteredReminders.length > 0 ? (
+              filteredReminders.map(reminder => (
+                <ReminderCard key={reminder.id} reminder={reminder} />
+              ))
+            ) : (
+              <motion.div 
+                initial={{ opacity: 0 }} 
+                animate={{ opacity: 1 }} 
+                exit={{ opacity: 0 }}
+                className="py-12 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-3xl bg-white/50 backdrop-blur-sm"
+              >
+                <div className="text-4xl mb-3">🪹</div>
+                <h3 className="font-semibold text-lg text-gray-900">All caught up!</h3>
+                <p className="text-sm mt-1">No reminders found for this filter.</p>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </section>
+      ) : (
+        <section className="mt-4">
+          <CalendarView />
+        </section>
+      )}
+
+      <AddReminderModal 
+        isOpen={isAddModalOpen} 
+        onClose={() => setIsAddModalOpen(false)} 
+      />
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+      />
+    </main>
   );
 }
