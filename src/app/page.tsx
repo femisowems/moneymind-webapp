@@ -14,36 +14,46 @@ import { AddReminderModal } from "@/components/AddReminderModal";
 import { SettingsModal } from "@/components/SettingsModal";
 import { AuthModal } from "@/components/AuthModal";
 import { ShopModal } from "@/components/ShopModal";
+import { SearchModal } from "@/components/SearchModal";
 import { AchievementsSection } from "@/components/AchievementsSection";
 import { GoalsSection } from "@/components/GoalsSection";
 import { CalendarView } from "@/components/CalendarView";
 import { PlayerLevelBar } from "@/components/PlayerLevelBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Settings, LayoutList, Calendar as CalendarIcon, Cloud, BarChart2, Store } from "lucide-react";
+import { Settings, LayoutList, Calendar as CalendarIcon, Cloud, BarChart2, Store, Search, Trash2, Tag, Clock, CheckCircle2 } from "lucide-react";
 import Link from "next/link";
 
 export default function Dashboard() {
-  const { reminders, categories } = useStore();
+  const storeState = useStore();
+  const { reminders, categories } = storeState;
   const { permission, requestPermission } = useNotifications();
   const [mounted, setMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isAuthOpen, setIsAuthOpen] = useState(false);
   const [isShopOpen, setIsShopOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>('All');
-  const [statusFilter, setStatusFilter] = useState<'Pending' | 'Completed' | 'All'>('Pending');
+  const [statusFilter, setStatusFilter] = useState<'Pending' | 'Completed' | 'All' | 'Deleted'>('Pending');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Global Command Palette Hook
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsSearchOpen(true);
+        return;
+      }
+
       // Don't trigger if user is typing in an input, textarea or select
       if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '')) {
         return;
       }
       
       // Prevent firing if any modal is open
-      if (isAddModalOpen || isSettingsOpen || isAuthOpen || isShopOpen) return;
+      if (isAddModalOpen || isSettingsOpen || isAuthOpen || isShopOpen || isSearchOpen) return;
 
       switch(e.key.toLowerCase()) {
         case 'c':
@@ -80,12 +90,42 @@ export default function Dashboard() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isAddModalOpen, isSettingsOpen, isAuthOpen, isShopOpen, setViewMode, setStatusFilter]);
+  }, [isAddModalOpen, isSettingsOpen, isAuthOpen, isShopOpen, isSearchOpen, setViewMode, setStatusFilter]);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
     return () => clearTimeout(t);
   }, []);
+
+  // First-Boot Onboarding Script
+  useEffect(() => {
+    if (mounted) {
+       const state = useStore.getState();
+       if (!state.hasCompletedOnboarding) {
+         const today = new Date().toISOString();
+         
+         state.addReminder({
+           title: "Swipe this card Right to complete it! 👉",
+           category: "1",
+           dueDate: today,
+           recurring: "none"
+         });
+         
+         state.addReminder({
+           title: "Click me to edit my subtasks and notes 📝",
+           category: "2",
+           dueDate: today,
+           recurring: "none",
+           subTasks: [
+             { id: crypto.randomUUID(), title: "Check out the Rewards Shop above 🛒", isCompleted: false },
+             { id: crypto.randomUUID(), title: "Try pushing Cmd+K to search 🔍", isCompleted: false }
+           ]
+         });
+
+         state.completeOnboarding();
+       }
+    }
+  }, [mounted]);
 
   if (!mounted) {
     return (
@@ -98,10 +138,13 @@ export default function Dashboard() {
     );
   }
 
-  const filteredReminders = reminders
+  const targetArray = statusFilter === 'Deleted' ? (storeState.deletedReminders || []) : reminders;
+
+  const filteredReminders = targetArray
     .filter(r => activeFilter === 'All' || r.category === activeFilter)
     .filter(r => {
       if (statusFilter === 'All') return true;
+      if (statusFilter === 'Deleted') return true;
       if (statusFilter === 'Completed') return r.isCompleted;
       return !r.isCompleted;
     })
@@ -125,6 +168,9 @@ export default function Dashboard() {
                Enable Alerts
             </Button>
           )}
+          <Button onClick={() => setIsSearchOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-xl border border-gray-200" title="Search (Cmd+K)">
+            <Search className="w-5 h-5 text-gray-500" />
+          </Button>
           <Button onClick={() => setIsShopOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-xl border border-gray-200">
             <Store className="w-5 h-5 text-indigo-500" />
           </Button>
@@ -205,32 +251,49 @@ export default function Dashboard() {
             ))}
           </div>
 
-          <div className="flex gap-2 bg-gray-100 p-1 rounded-full shrink-0">
-            {(['All', 'Pending', 'Completed'] as const).map(status => (
-              <button
-                key={status}
-                onClick={() => setStatusFilter(status)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  statusFilter === status
-                    ? 'bg-white shadow-sm text-foreground'
-                    : 'text-gray-500 hover:text-gray-900'
-                }`}
-              >
-                {status}
-              </button>
-            ))}
-          </div>
-        </div>
+              <div className="flex gap-2 text-sm bg-gray-100/80 p-1.5 rounded-full overflow-x-auto no-scrollbar snap-x shadow-inner">
+                {[
+                  { value: 'All', icon: <Tag className="w-4 h-4" />, label: 'View All' },
+                  { value: 'Pending', icon: <Clock className="w-4 h-4" />, label: 'Pending' },
+                  { value: 'Completed', icon: <CheckCircle2 className="w-4 h-4" />, label: 'Completed' },
+                  { value: 'Deleted', icon: <Trash2 className="w-4 h-4" />, label: 'Recycle Bin' }
+                ].map((tab) => (
+                  <button
+                    key={tab.value}
+                    onClick={() => setStatusFilter(tab.value as any)}
+                    title={tab.label}
+                    className={`px-3 py-1.5 rounded-full transition-all flex items-center justify-center ${
+                      statusFilter === tab.value
+                        ? 'bg-white shadow-sm text-foreground'
+                        : 'text-gray-500 hover:text-gray-900'
+                    }`}
+                  >
+                    {tab.icon}
+                  </button>
+                ))}
+              </div>
+            </div>
 
-        <div className="flex flex-col gap-3">
-          <AnimatePresence mode="popLayout">
-            {filteredReminders.length > 0 ? (
-              filteredReminders.map(reminder => (
-                <ReminderCard key={reminder.id} reminder={reminder} />
-              ))
-            ) : (
-              <motion.div 
-                initial={{ opacity: 0 }} 
+            <div className="flex flex-col gap-3">
+              <AnimatePresence mode="popLayout">
+                {filteredReminders.length > 0 ? (
+                  <div className="flex flex-col gap-2">
+                    <div className="flex justify-between items-center px-2 py-2">
+                       <h2 className="text-sm font-bold text-gray-400 tracking-widest uppercase flex items-center gap-2">
+                         {statusFilter === 'Deleted' ? 'Recycle Bin' : 'Your Tasks'} ({filteredReminders.length})
+                       </h2>
+                       {statusFilter === 'Deleted' && filteredReminders.length > 0 && (
+                         <Button onClick={storeState.clearTrash} variant="ghost" size="sm" className="h-6 text-[10px] text-danger hover:bg-danger/10 hover:text-danger rounded-full px-2">
+                           Empty Trash
+                         </Button>
+                       )}
+                    </div>
+                    {filteredReminders.map(reminder => (
+                      <ReminderCard key={reminder.id} reminder={reminder} isDeletedItem={statusFilter === 'Deleted'} />
+                    ))}
+                  </div>
+                ) : (
+                  <motion.div
                 animate={{ opacity: 1 }} 
                 exit={{ opacity: 0 }}
                 className="py-12 text-center text-gray-500 border-2 border-dashed border-gray-200 rounded-3xl bg-white/50 backdrop-blur-sm"
@@ -259,6 +322,7 @@ export default function Dashboard() {
       />
       <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
       <ShopModal isOpen={isShopOpen} onClose={() => setIsShopOpen(false)} />
+      <SearchModal isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
     </main>
   );
 }

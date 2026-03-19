@@ -11,11 +11,17 @@ interface AppState {
   unlockedAchievements: string[];
   goals: Goal[];
   inventory: { streakFreezes: number };
+  hasCompletedOnboarding: boolean;
+  deletedReminders: Reminder[];
   
   // Actions
+  completeOnboarding: () => void;
   addReminder: (reminder: Omit<Reminder, 'id' | 'isCompleted'>) => void;
   toggleReminder: (id: string) => void;
   deleteReminder: (id: string) => void;
+  restoreReminder: (id: string) => void;
+  permanentDelete: (id: string) => void;
+  clearTrash: () => void;
   updateReminder: (id: string, updates: Partial<Reminder>) => void;
   addCategory: (category: Omit<CustomCategory, 'id'>) => void;
   deleteCategory: (id: string) => void;
@@ -38,6 +44,8 @@ export const useStore = create<AppState>()(
       unlockedAchievements: [],
       goals: [],
       inventory: { streakFreezes: 0 },
+      hasCompletedOnboarding: false,
+      deletedReminders: [],
       categories: [
         { id: '1', name: 'Bills', color: 'danger' },
         { id: '2', name: 'Savings', color: 'success' },
@@ -55,6 +63,10 @@ export const useStore = create<AppState>()(
         set((state) => ({
           categories: state.categories.filter(c => c.id !== id)
         }));
+      },
+
+      completeOnboarding: () => {
+        set({ hasCompletedOnboarding: true });
       },
 
       addReminder: (reminderData) => {
@@ -190,11 +202,36 @@ export const useStore = create<AppState>()(
         get().calculateScore();
       },
 
-      deleteReminder: (id: string) => {
+      deleteReminder: (id) => {
+        set((state) => {
+          const reminderToTrash = state.reminders.find(r => r.id === id);
+          if (!reminderToTrash) return state;
+          return {
+            reminders: state.reminders.filter((r) => r.id !== id),
+            deletedReminders: [...(state.deletedReminders || []), reminderToTrash]
+          };
+        });
+      },
+
+      restoreReminder: (id) => {
+        set((state) => {
+          const reminderToRestore = (state.deletedReminders || []).find(r => r.id === id);
+          if (!reminderToRestore) return state;
+          return {
+            deletedReminders: (state.deletedReminders || []).filter((r) => r.id !== id),
+            reminders: [...state.reminders, reminderToRestore]
+          };
+        });
+      },
+
+      permanentDelete: (id) => {
         set((state) => ({
-          reminders: state.reminders.filter((r) => r.id !== id),
+          deletedReminders: (state.deletedReminders || []).filter((r) => r.id !== id)
         }));
-        get().calculateScore();
+      },
+      
+      clearTrash: () => {
+        set({ deletedReminders: [] });
       },
 
       updateReminder: (id: string, updates: Partial<Reminder>) => {
