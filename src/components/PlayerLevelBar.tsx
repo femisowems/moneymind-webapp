@@ -36,7 +36,7 @@ export function PlayerLevelBar() {
         </div>
       </div>
 
-      <div className="flex-1 max-w-sm hidden sm:block relative">
+      <div className="flex-1 max-w-sm relative">
         <div className="flex justify-between text-[10px] font-black text-gray-400 mb-1.5 uppercase tracking-wider">
           <span>{xpIntoLevel} / 100 XP</span>
           <span className="text-primary">{100 - xpIntoLevel} TO GO</span>
@@ -49,7 +49,7 @@ export function PlayerLevelBar() {
         </div>
       </div>
       
-      <div className="text-right flex flex-col items-end hidden sm:flex">
+      <div className="text-right flex flex-col items-end">
         <span className="text-[10px] font-black text-gray-400 uppercase tracking-wider">Next Lvl</span>
         <span className="text-sm font-bold text-primary">{100 - xpIntoLevel} XP</span>
       </div>

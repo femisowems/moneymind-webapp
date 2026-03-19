@@ -162,34 +162,34 @@ export default function Dashboard() {
           </h1>
           <p className="text-gray-500 font-medium">{today}</p>
         </div>
-        <div className="flex w-full sm:w-auto items-center gap-3">
+        <div className="flex flex-col-reverse sm:flex-row w-full sm:w-auto items-stretch sm:items-center gap-3">
           {permission === 'default' && (
-            <Button onClick={requestPermission} variant="secondary" size="sm" className="hidden sm:flex rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 text-gray-700 font-medium tracking-tight">
+            <Button onClick={requestPermission} variant="secondary" size="sm" className="flex rounded-full bg-white border border-gray-200 shadow-sm hover:bg-gray-50 text-gray-700 font-medium tracking-tight">
                <div className="w-2 h-2 rounded-full bg-primary animate-pulse mr-2" />
                Enable Alerts
             </Button>
           )}
 
-          <div className="hidden sm:flex items-center p-1 bg-white/80 backdrop-blur-md border border-gray-200/80 rounded-full shadow-sm gap-0.5">
-            <Button onClick={() => setIsSearchOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 h-9 w-9 text-gray-500 hover:text-gray-900 transition-colors" title="Search (Cmd+K)">
-              <Search className="w-[18px] h-[18px]" />
+          <div className="flex w-full sm:w-auto justify-center items-center p-1.5 sm:p-1 bg-white/80 backdrop-blur-md border border-gray-200/80 rounded-[2rem] sm:rounded-full shadow-sm gap-1 sm:gap-0.5">
+            <Button onClick={() => setIsSearchOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 h-10 w-10 sm:h-9 sm:w-9 text-gray-500 hover:text-gray-900 transition-colors" title="Search (Cmd+K)">
+              <Search className="w-5 h-5 sm:w-[18px] sm:h-[18px]" />
             </Button>
-            <Button onClick={() => setIsShopOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-indigo-50 h-9 w-9 text-indigo-400 hover:text-indigo-600 transition-colors" title="Shop">
-              <Store className="w-[18px] h-[18px]" />
+            <Button onClick={() => setIsShopOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-indigo-50 h-10 w-10 sm:h-9 sm:w-9 text-indigo-400 hover:text-indigo-600 transition-colors" title="Shop">
+              <Store className="w-5 h-5 sm:w-[18px] sm:h-[18px]" />
             </Button>
-            <Link href="/insights" className="flex items-center justify-center w-9 h-9 rounded-full hover:bg-primary/10 transition-colors text-gray-500 hover:text-primary" title="Insights (I)">
-              <BarChart2 className="w-[18px] h-[18px]" />
+            <Link href="/insights" className="flex items-center justify-center w-10 h-10 sm:w-9 sm:h-9 rounded-full hover:bg-primary/10 transition-colors text-gray-500 hover:text-primary" title="Insights (I)">
+              <BarChart2 className="w-5 h-5 sm:w-[18px] sm:h-[18px]" />
             </Link>
-            <Button onClick={() => setIsAuthOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 h-9 w-9 text-gray-500 hover:text-gray-900 transition-colors" title="Account">
-              <Cloud className="w-[18px] h-[18px]" />
+            <Button onClick={() => setIsAuthOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 h-10 w-10 sm:h-9 sm:w-9 text-gray-500 hover:text-gray-900 transition-colors" title="Account">
+              <Cloud className="w-5 h-5 sm:w-[18px] sm:h-[18px]" />
             </Button>
-            <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 h-9 w-9 text-gray-500 hover:text-gray-900 transition-colors" title="Settings">
-              <Settings className="w-[18px] h-[18px]" />
+            <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" size="icon" className="rounded-full hover:bg-gray-100 h-10 w-10 sm:h-9 sm:w-9 text-gray-500 hover:text-gray-900 transition-colors" title="Settings">
+              <Settings className="w-5 h-5 sm:w-[18px] sm:h-[18px]" />
             </Button>
           </div>
 
-          <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-gradient-to-r from-primary to-primary-hover px-5">
-            <Plus className="w-5 h-5 mr-1.5" />
+          <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-gradient-to-r from-primary to-primary-hover px-5 py-6 sm:py-2 text-lg sm:text-sm">
+            <Plus className="w-6 h-6 sm:w-5 sm:h-5 mr-1.5" />
             Add Reminder
           </Button>
         </div>
