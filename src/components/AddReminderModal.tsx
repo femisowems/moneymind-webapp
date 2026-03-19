@@ -19,7 +19,7 @@ export function AddReminderModal({ isOpen, onClose }: Props) {
   const [lateFee, setLateFee] = useState("");
   const [dueDate, setDueDate] = useState(new Date().toISOString().substring(0, 10));
   const [category, setCategory] = useState<string>("1");
-  const [recurring, setRecurring] = useState<"none" | "weekly" | "monthly">("none");
+  const [recurring, setRecurring] = useState<"none" | "daily" | "weekly" | "monthly" | "yearly">("none");
   const [notes, setNotes] = useState("");
   const [url, setUrl] = useState("");
   const [autoPay, setAutoPay] = useState(false);
@@ -112,11 +112,13 @@ export function AddReminderModal({ isOpen, onClose }: Props) {
             <label className="block text-sm font-medium text-gray-700 mb-1">Recurring</label>
             <Select 
               value={recurring} 
-              onChange={(e) => setRecurring(e.target.value as "none" | "weekly" | "monthly")}
+              onChange={(e) => setRecurring(e.target.value as "none" | "daily" | "weekly" | "monthly" | "yearly")}
               options={[
                 { label: "None", value: "none" },
+                { label: "Daily", value: "daily" },
                 { label: "Weekly", value: "weekly" },
                 { label: "Monthly", value: "monthly" },
+                { label: "Yearly", value: "yearly" },
               ]}
             />
           </div>

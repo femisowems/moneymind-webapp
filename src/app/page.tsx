@@ -12,11 +12,16 @@ import { HealthScoreCard } from "@/components/HealthScoreCard";
 import { MissedImpactCard } from "@/components/MissedImpactCard";
 import { AddReminderModal } from "@/components/AddReminderModal";
 import { SettingsModal } from "@/components/SettingsModal";
+import { AuthModal } from "@/components/AuthModal";
+import { ShopModal } from "@/components/ShopModal";
 import { AchievementsSection } from "@/components/AchievementsSection";
+import { GoalsSection } from "@/components/GoalsSection";
 import { CalendarView } from "@/components/CalendarView";
+import { PlayerLevelBar } from "@/components/PlayerLevelBar";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNotifications } from "@/hooks/useNotifications";
-import { Settings, LayoutList, Calendar as CalendarIcon } from "lucide-react";
+import { Settings, LayoutList, Calendar as CalendarIcon, Cloud, BarChart2, Store } from "lucide-react";
+import Link from "next/link";
 
 export default function Dashboard() {
   const { reminders, categories } = useStore();
@@ -24,9 +29,58 @@ export default function Dashboard() {
   const [mounted, setMounted] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isAuthOpen, setIsAuthOpen] = useState(false);
+  const [isShopOpen, setIsShopOpen] = useState(false);
   const [activeFilter, setActiveFilter] = useState<string>('All');
   const [statusFilter, setStatusFilter] = useState<'Pending' | 'Completed' | 'All'>('Pending');
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger if user is typing in an input, textarea or select
+      if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName || '')) {
+        return;
+      }
+      
+      // Prevent firing if any modal is open
+      if (isAddModalOpen || isSettingsOpen || isAuthOpen || isShopOpen) return;
+
+      switch(e.key.toLowerCase()) {
+        case 'c':
+        case 'n':
+          e.preventDefault();
+          setIsAddModalOpen(true);
+          break;
+        case 's':
+          e.preventDefault();
+          setIsSettingsOpen(true);
+          break;
+        case 'v':
+          e.preventDefault();
+          setViewMode(prev => prev === 'list' ? 'calendar' : 'list');
+          break;
+        case 'i':
+          e.preventDefault();
+          window.location.href = '/insights';
+          break;
+        case '1':
+          e.preventDefault();
+          setStatusFilter('All');
+          break;
+        case '2':
+          e.preventDefault();
+          setStatusFilter('Pending');
+          break;
+        case '3':
+          e.preventDefault();
+          setStatusFilter('Completed');
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isAddModalOpen, isSettingsOpen, isAuthOpen, isShopOpen, setViewMode, setStatusFilter]);
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 0);
@@ -71,7 +125,16 @@ export default function Dashboard() {
                Enable Alerts
             </Button>
           )}
-          <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-full border border-gray-200">
+          <Button onClick={() => setIsShopOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-xl border border-gray-200">
+            <Store className="w-5 h-5 text-indigo-500" />
+          </Button>
+          <Link href="/insights" className="p-2.5 bg-gray-50 border border-gray-100 hover:bg-primary/10 hover:text-primary rounded-xl transition-all shadow-sm hidden sm:flex" title="Insights (I)">
+            <BarChart2 className="w-5 h-5 text-gray-500" />
+          </Link>
+          <Button onClick={() => setIsAuthOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-xl border border-gray-200">
+            <Cloud className="w-5 h-5 text-gray-500" />
+          </Button>
+          <Button onClick={() => setIsSettingsOpen(true)} variant="ghost" size="icon" className="hidden sm:flex rounded-xl border border-gray-200">
             <Settings className="w-5 h-5 text-gray-500" />
           </Button>
           <Button onClick={() => setIsAddModalOpen(true)} className="w-full sm:w-auto rounded-full shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all bg-gradient-to-r from-primary to-primary-hover">
@@ -80,6 +143,8 @@ export default function Dashboard() {
           </Button>
         </div>
       </header>
+
+      <PlayerLevelBar />
 
       {/* Top Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
@@ -192,6 +257,8 @@ export default function Dashboard() {
         isOpen={isSettingsOpen} 
         onClose={() => setIsSettingsOpen(false)} 
       />
+      <AuthModal isOpen={isAuthOpen} onClose={() => setIsAuthOpen(false)} />
+      <ShopModal isOpen={isShopOpen} onClose={() => setIsShopOpen(false)} />
     </main>
   );
 }

@@ -28,16 +28,42 @@ export function ReminderCard({ reminder }: { reminder: Reminder }) {
       layout
       initial={{ opacity: 0, scale: 0.95 }}
       animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.95 }}
+      exit={{ opacity: 0, height: 0, marginBottom: 0 }}
       transition={{ duration: 0.2 }}
+      className="relative"
     >
-      <Card 
-        onClick={() => setIsDetailsOpen(true)}
-        className={cn(
-          "p-4 transition-all hover:shadow-md group relative overflow-hidden cursor-pointer",
-          reminder.isCompleted ? "opacity-60 bg-gray-50" : "bg-white",
-          overdue && "border-danger/30 bg-danger/5"
-      )}>
+      {/* Visual background for swipe gestures */}
+      <div className="absolute inset-0 rounded-2xl flex items-center justify-between px-6 pointer-events-none -z-10 bg-gray-100">
+        <div className="flex flex-col items-center justify-center text-success/80">
+          <Check className="w-6 h-6 mb-1" />
+          <span className="text-[10px] font-bold uppercase tracking-wider">Complete</span>
+        </div>
+        <div className="flex flex-col items-center justify-center text-danger/80">
+          <Trash2 className="w-6 h-6 mb-1" />
+          <span className="text-[10px] font-bold uppercase tracking-wider">Delete</span>
+        </div>
+      </div>
+
+      <motion.div
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.4}
+        onDragEnd={(e, info) => {
+          if (info.offset.x > 100) {
+            toggleReminder(reminder.id);
+          } else if (info.offset.x < -100) {
+            deleteReminder(reminder.id);
+          }
+        }}
+        className="z-10 bg-white rounded-2xl"
+      >
+        <Card 
+          onClick={() => setIsDetailsOpen(true)}
+          className={cn(
+            "p-4 transition-all hover:shadow-md group relative overflow-hidden cursor-pointer",
+            reminder.isCompleted ? "opacity-60 bg-gray-50" : "bg-white",
+            overdue && "border-danger/30 bg-danger/5"
+        )}>
         {overdue && (
           <div className="absolute top-0 left-0 w-1 h-full bg-danger" />
         )}
@@ -104,6 +130,7 @@ export function ReminderCard({ reminder }: { reminder: Reminder }) {
           </Button>
         </div>
       </Card>
+      </motion.div>
 
       <ReminderDetailsModal 
         isOpen={isDetailsOpen} 
